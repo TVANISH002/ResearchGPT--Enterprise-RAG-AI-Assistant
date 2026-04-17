@@ -147,8 +147,27 @@ docker-compose up --build
 
 ---
 
-**Portfolio-ready project** demonstrating **RAG + LangChain + Hugging Face + FastAPI + Streamlit**
+Project demonstrating RAG + LangChain + Hugging Face + FastAPI + Streamlit
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

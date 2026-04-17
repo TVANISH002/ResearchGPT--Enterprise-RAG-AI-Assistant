@@ -1,0 +1,11 @@
+fastapi
+pydantic
+uvicorn
+streamlit
+PyPDF2
+sentence-transformers
+faiss-cpu
+langchain
+scikit-learn
+numpy
+requests

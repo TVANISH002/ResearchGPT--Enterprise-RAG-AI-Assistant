@@ -1,114 +1,57 @@
 import streamlit as st
 import requests
 
-# ---------------- CONFIG ----------------
-API_BASE_URL = "http://localhost:8000"
-
 st.set_page_config(
-    page_title="RAG Chat Assistant",
-    page_icon="💬",
+    page_title="ResearchGPT",
     layout="wide"
 )
 
-# ---------------- SESSION STATE ----------------
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Sidebar
+st.sidebar.title("📄 ResearchGPT")
+st.sidebar.write("Upload research papers and ask questions.")
 
-# ---------------- STYLING ----------------
-st.markdown("""
-<style>
-.chat-container {
-    max-width: 800px;
-    margin: auto;
-}
-.user-bubble {
-    background-color: #2563eb;
-    color: white;
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin: 10px 0;
-    text-align: right;
-}
-.assistant-bubble {
-    background-color: #f1f5f9;
-    color: #111827;
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin: 10px 0;
-    text-align: left;
-}
-.header {
-    text-align: center;
-    padding-bottom: 10px;
-}
-.clear-btn button {
-    background-color: #ef4444 !important;
-    color: white !important;
-    border-radius: 8px;
-}
-</style>
-""", unsafe_allow_html=True)
+# Main Title
+st.title("🔍 Research Paper Q&A System")
 
-# ---------------- HEADER ----------------
-st.markdown("""
-<div class="header">
-    <h1>💬 RAG Chat Assistant</h1>
-    <p style="color:gray;">Ask questions about your uploaded research paper</p>
-</div>
-""", unsafe_allow_html=True)
+# File Upload Section
+st.subheader("📤 Upload PDF")
+uploaded_file = st.file_uploader("Choose a PDF", type=["pdf"])
 
-# ---------------- SIDEBAR ----------------
-with st.sidebar:
-    st.markdown("### 📄 Upload Document")
-    uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
+if uploaded_file:
+    with st.spinner("Processing PDF..."):
+        files = {"file": uploaded_file}
+        res = requests.post("http://localhost:8000/upload", files=files)
+        st.success(res.json()["message"])
 
-    if uploaded_file:
-        with st.spinner("Processing PDF..."):
-            response = requests.post(
-                f"{API_BASE_URL}/ingest",
-                files={"file": uploaded_file}
-            )
-        if response.status_code == 200:
-            st.success("✅ Document ready!")
-        else:
-            st.error("❌ Upload failed")
+# Query Section
+st.subheader("💬 Ask Questions")
 
-    st.markdown("---")
+query = st.text_input("Enter your question")
 
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.messages = []
-        st.rerun()
+col1, col2 = st.columns([1, 5])
 
-# ---------------- CHAT DISPLAY ----------------
-st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+with col1:
+    ask_btn = st.button("Ask")
 
-for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        st.markdown(f"<div class='user-bubble'>{msg['content']}</div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div class='assistant-bubble'>{msg['content']}</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# ---------------- INPUT ----------------
-query = st.chat_input("Ask something about your document...")
-
-if query:
-    # Add user message
-    st.session_state.messages.append({"role": "user", "content": query})
-
-    with st.spinner("Thinking..."):
-        response = requests.get(
-            f"{API_BASE_URL}/query",
+if ask_btn and query:
+    with st.spinner("Generating answer..."):
+        res = requests.post(
+            "http://localhost:8000/query",
             params={"q": query}
         )
+        answer = res.json()["answer"]
 
-    if response.status_code == 200:
-        answer = response.json()["answer"]
-    else:
-        answer = "❌ Failed to fetch answer from backend."
+    st.subheader("📌 Answer")
+    st.write(answer)
 
-    # Add assistant response
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    # Expandable context (optional future)
+    with st.expander("ℹ️ How this works"):
+        st.write("""
+        - Your query is converted into embeddings  
+        - Relevant chunks are retrieved from FAISS  
+        - LLM generates an answer based on context  
+        """)
 
-    st.rerun()
+# Footer
+st.markdown("---")
+st.markdown("Built using RAG + FAISS + Open Models")
