@@ -1,0 +1,27 @@
+[project]
+name = "enterprise-rag-ai-assistant"
+version = "0.1.0"
+description = "RAG Research Assistant"
+requires-python = ">=3.10,<3.12"
+
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "streamlit",
+    "requests",
+    "python-dotenv",
+    "pypdf2",
+    "faiss-cpu",
+    "numpy",
+    "scikit-learn",
+    "sentence-transformers",
+    "transformers",
+    "torch",
+    "peft",
+    "accelerate",
+    "sentencepiece",
+    # IMPORTANT: new LangChain split package
+    "langchain-text-splitters",
+    "pydantic>=2.13.3",
+    "langchain>=1.2.15",
+]

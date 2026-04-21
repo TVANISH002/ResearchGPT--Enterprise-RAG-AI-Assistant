@@ -12,9 +12,11 @@ logging.basicConfig(
 
 logger = logging.getLogger("RAGApp")
 
+
 def log_info(msg):
     print(msg)
     logger.info(msg)
+
 
 def log_error(msg):
     print(f"ERROR: {msg}")
