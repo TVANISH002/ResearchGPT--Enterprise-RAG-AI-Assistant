@@ -146,18 +146,3 @@ Attention replaces recurrence in sequence modeling
 - Citation grounding  
 - Multi-document reasoning  
 
----
-
-## 💼 Resume Highlights
-
-- Built end-to-end RAG system with FAISS-based retrieval  
-- Improved retrieval relevance and reduced hallucination  
-- Designed structured prompting for research outputs  
-- Integrated API-based LLM inference (Groq)  
-
----
-
-## 👤 Author
-
-Anish TV  
-MS Computer Science — University of Florida
