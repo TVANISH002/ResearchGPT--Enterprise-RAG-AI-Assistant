@@ -4,23 +4,25 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build-and-check:
     runs-on: ubuntu-latest
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
       API_URL: http://localhost:8000
       GROQ_API_KEY: dummy_key_for_ci
       GROQ_MODEL: llama-3.1-8b-instant
       HF_TOKEN: dummy_hf_token_for_ci
+
       CHUNK_SIZE: 750
       CHUNK_OVERLAP: 150
       TOP_K: 8
+
       EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+
       MAX_NEW_TOKENS: 300
       TEMPERATURE: 0.2
       TOP_P: 0.9
