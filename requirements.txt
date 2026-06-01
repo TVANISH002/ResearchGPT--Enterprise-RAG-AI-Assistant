@@ -1,11 +1,12 @@
 fastapi
-pydantic
 uvicorn
 streamlit
+requests
+python-dotenv
 PyPDF2
 sentence-transformers
 faiss-cpu
-langchain
-scikit-learn
 numpy
+pandas
+scikit-learn
 requests

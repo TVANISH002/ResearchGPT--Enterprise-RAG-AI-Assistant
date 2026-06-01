@@ -11,13 +11,6 @@ This system solves that by grounding responses in retrieved context.
 
 ---
 
-## 🧠 System Overview
-
-PDF → Text Extraction → Chunking → Embedding → FAISS Index  
-→ Query → Retrieval → Prompt → LLM → Answer
-
----
-
 ## 🏗️ Architecture
 
 ### Ingestion
@@ -145,19 +138,3 @@ Attention replaces recurrence in sequence modeling
 - Hybrid retrieval (BM25 + vector)  
 - Citation grounding  
 - Multi-document reasoning  
-
----
-
-## 💼 Resume Highlights
-
-- Built end-to-end RAG system with FAISS-based retrieval  
-- Improved retrieval relevance and reduced hallucination  
-- Designed structured prompting for research outputs  
-- Integrated API-based LLM inference (Groq)  
-
----
-
-## 👤 Author
-
-Anish TV  
-MS Computer Science — University of Florida

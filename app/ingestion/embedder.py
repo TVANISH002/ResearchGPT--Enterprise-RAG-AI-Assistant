@@ -1,22 +1,39 @@
 from sentence_transformers import SentenceTransformer
+
 from app.config import EMBEDDING_MODEL
 
-model = SentenceTransformer(EMBEDDING_MODEL)
+
+_model = None
 
 
-def embed_chunks(chunks):
-    if len(chunks) == 0:
-        return []
+def get_embedding_model():
+    """
+    Load the embedding model only once.
+    """
+    global _model
 
-    texts = []
-    for c in chunks:
-        if isinstance(c, dict) and "chunk" in c:
-            texts.append(c["chunk"])
-        else:
-            texts.append(str(c))
+    if _model is None:
+        _model = SentenceTransformer(EMBEDDING_MODEL)
 
-    return model.encode(texts)
+    return _model
 
 
-def embed_query(query):
-    return model.encode([query])[0]
+def embed_texts(texts: list[str]):
+    """
+    Convert text into embedding vectors.
+
+    Input:
+        ["text one", "text two"]
+
+    Output:
+        numpy array of embeddings
+    """
+    model = get_embedding_model()
+
+    embeddings = model.encode(
+        texts,
+        convert_to_numpy=True,
+        show_progress_bar=True
+    )
+
+    return embeddings

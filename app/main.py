@@ -1,68 +1,125 @@
-from fastapi import FastAPI, UploadFile, File
-from app.helper import log_info, log_error
+import os
+import shutil
 
-from app.ingestion.loader import save_pdf, extract_text
-from app.ingestion.splitter import split_text
-from app.ingestion.embedder import embed_chunks, embed_query
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from pydantic import BaseModel
 
-from app.retrieval.vector_store import save_index, load_index
-from app.retrieval.retriever import retrieve
-from app.retrieval.query_rewriter import rewrite_query
-
+from app.config import UPLOAD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, TOP_K
+from app.ingestion.pdf_loader import load_pdfs
+from app.ingestion.chunker import chunk_documents
+from app.retrieval.retriever import ResearchRetriever
 from app.generation.qa_chain import generate_answer
 
-app = FastAPI(title="ResearchGPT API")
+
+app = FastAPI(
+    title="ResearchGPT API",
+    description="Production-style RAG system for research-paper question answering.",
+    version="1.0.0"
+)
+
+retriever = ResearchRetriever()
+index_ready = False
 
 
-@app.post("/upload")
-async def upload(file: UploadFile = File(...)):
-    try:
-        path = save_pdf(file)
-        log_info(f"Uploaded: {file.filename}")
-
-        text = extract_text(path)
-        raw_chunks = split_text(text)
-
-        chunks = [
-            {"chunk": chunk, "pdf": file.filename, "page": "unknown"}
-            for chunk in raw_chunks
-        ]
-
-        embeddings = embed_chunks(chunks)
-        save_index(chunks, embeddings)
-
-        return {
-            "message": "PDF processed successfully",
-            "num_chunks": len(chunks),
-            "filename": file.filename
-        }
-
-    except Exception as e:
-        log_error(str(e))
-        return {"error": str(e)}
+class QueryRequest(BaseModel):
+    question: str
 
 
-@app.post("/query")
-async def query(q: str, mode: str = "base"):
-    try:
-        index, chunks = load_index()
+@app.get("/")
+def root():
+    return {
+        "project": "ResearchGPT",
+        "message": "ResearchGPT API is running.",
+        "pipeline": "PDF Upload → Text Extraction → Chunking → Embedding → FAISS → Retrieval → LLM Answer"
+    }
 
-        rewritten_q = rewrite_query(q)
-        q_vec = embed_query(rewritten_q)
-        top_chunks = retrieve(q_vec, index, chunks)
 
-        answer = generate_answer(top_chunks, rewritten_q, mode=mode)
+@app.post("/upload-pdf")
+async def upload_pdf(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF files are supported."
+        )
 
-        log_info(f"Query: {q} | Mode: {mode}")
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
 
-        return {
-            "query": q,
-            "rewritten_query": rewritten_q,
-            "mode": mode,
-            "retrieved_chunks": top_chunks,
-            "answer": answer
-        }
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
-    except Exception as e:
-        log_error(str(e))
-        return {"error": str(e)}
+    return {
+        "message": "PDF uploaded successfully.",
+        "file_name": file.filename,
+        "saved_to": file_path
+    }
+
+
+@app.post("/build-index")
+def build_index():
+    global index_ready
+
+    pdf_texts = load_pdfs(UPLOAD_DIR)
+
+    if not pdf_texts:
+        raise HTTPException(
+            status_code=404,
+            detail="No PDFs found. Please upload a research paper first."
+        )
+
+    chunks = chunk_documents(
+        pdf_texts=pdf_texts,
+        chunk_size=CHUNK_SIZE,
+        overlap=CHUNK_OVERLAP
+    )
+
+    retriever.build_index(chunks)
+    retriever.save_index()
+
+    index_ready = True
+
+    return {
+        "message": "Index built successfully.",
+        "documents_processed": len(pdf_texts),
+        "chunks_generated": len(chunks),
+        "chunk_size": CHUNK_SIZE,
+        "chunk_overlap": CHUNK_OVERLAP,
+        "top_k": TOP_K
+    }
+
+
+@app.post("/ask")
+def ask_question(request: QueryRequest):
+    global index_ready
+
+    if not index_ready:
+        try:
+            retriever.load_index()
+            index_ready = True
+        except Exception:
+            raise HTTPException(
+                status_code=400,
+                detail="Index not found. Please upload PDFs and run /build-index first."
+            )
+
+    retrieved_chunks = retriever.retrieve(
+        query=request.question,
+        top_k=TOP_K
+    )
+
+    answer = generate_answer(
+        question=request.question,
+        retrieved_chunks=retrieved_chunks
+    )
+
+    return {
+        "question": request.question,
+        "retrieved_sources": [
+            {
+                "source": chunk["source"],
+                "chunk_id": chunk["chunk_id"],
+                "distance": chunk.get("distance")
+            }
+            for chunk in retrieved_chunks
+        ],
+        "answer": answer
+    }
