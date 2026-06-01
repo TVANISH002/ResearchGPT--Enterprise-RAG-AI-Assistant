@@ -1,5 +1,8 @@
 # 🔍 ResearchGPT — Production-Style RAG System for Research Papers
 
+![ResearchGPT CI](https://github.com/TVANISH002/ResearchGPT--Enterprise-RAG-AI-Assistant/actions/workflows/ci.yml/badge.svg)
+
+
 A modular Retrieval-Augmented Generation (RAG) system that transforms research papers into a grounded question-answering engine — built for scalable corpus indexing, low-latency retrieval, and hallucination-resistant generation.
 
 ---

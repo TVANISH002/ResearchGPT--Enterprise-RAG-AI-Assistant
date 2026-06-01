@@ -1,0 +1,65 @@
+name: ResearchGPT CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    env:
+      API_URL: http://localhost:8000
+      GROQ_API_KEY: dummy_key_for_ci
+      GROQ_MODEL: llama-3.1-8b-instant
+      HF_TOKEN: dummy_hf_token_for_ci
+      CHUNK_SIZE: 750
+      CHUNK_OVERLAP: 150
+      TOP_K: 8
+      EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+      MAX_NEW_TOKENS: 300
+      TEMPERATURE: 0.2
+      TOP_P: 0.9
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check app package imports
+        run: |
+          python -c "from app.config import CHUNK_SIZE, CHUNK_OVERLAP, TOP_K; print('Config import OK')"
+          python -c "from app.ingestion.pdf_loader import extract_text_from_pdf, load_pdfs; print('PDF loader import OK')"
+          python -c "from app.ingestion.chunker import chunk_text, chunk_documents; print('Chunker import OK')"
+          python -c "from app.ingestion.embedder import get_embedding_model, embed_texts; print('Embedder import OK')"
+          python -c "from app.retrieval.vector_store import FAISSVectorStore; print('Vector store import OK')"
+          python -c "from app.retrieval.retriever import ResearchRetriever; print('Retriever import OK')"
+          python -c "from app.generation.qa_chain import build_prompt, generate_answer; print('QA chain import OK')"
+
+      - name: Check evaluation modules
+        run: |
+          python -c "from app.evaluation.evaluator import keyword_match_score, grounding_score; print('Evaluator import OK')"
+          python -c "from app.evaluation.benchmark_question import test_cases; assert len(test_cases) > 0; print('Benchmark questions OK:', len(test_cases))"
+          python -c "from app.evaluation.corpus_stats import calculate_corpus_stats; print('Corpus stats import OK')"
+          python -c "from app.evaluation.retrieval_benchmark import run_retrieval_benchmark; print('Retrieval benchmark import OK')"
+          python -c "from app.evaluation.hallucination_check import run_hallucination_check; print('Hallucination check import OK')"
+
+      - name: Check FastAPI app loads
+        run: |
+          python -c "from app.main import app; print('FastAPI app import OK')"
