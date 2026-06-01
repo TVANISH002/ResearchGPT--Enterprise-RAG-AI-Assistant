@@ -1,9 +1,12 @@
 import requests
 import streamlit as st
+from dotenv import load_dotenv
+import os
 
 
-API_URL = "http://127.0.0.1:8000"
+load_dotenv()
 
+API_URL = os.environ["API_URL"]
 
 st.set_page_config(
     page_title="ResearchGPT",
