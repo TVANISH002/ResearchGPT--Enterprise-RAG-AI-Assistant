@@ -1,120 +1,74 @@
-.env
-data
-papers
-vector_store
+# Python cache files
 
-
-# ===============================
-# 🔐 ENVIRONMENT VARIABLES
-# ===============================
-.env
-.env.*
-*.env
-
-# ===============================
-# 🐍 PYTHON
-# ===============================
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-*.so
+*.pyc
+
 
 # Virtual environments
-.venv/
-.env
 
+.venv/
 venv/
 env/
 ENV/
-__pycache__
-uv.lock
+.env
+.env.*
+!.env.example
 
-# ===============================
-# 📦 PACKAGE / BUILD
-# ===============================
+
+papers/*
+!papers/.gitkeep
+
+# FAISS / vector store generated files
+
+vector_store/*
+!vector_store/.gitkeep
+
+*.index
+*.faiss
+*.pkl
+*.pickle
+
+
+reports/*
+!reports/.gitkeep
+
+# Logs
+
+logs/*
+!logs/.gitkeep
+*.log
+
+# Streamlit local config
+
+.streamlit/secrets.toml
+
+
+# Jupyter notebooks checkpoints
+
+.ipynb_checkpoints/
+
+
+# OS / editor files
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+
+# Build / distribution files
+
 build/
 dist/
 *.egg-info/
-.eggs/
 
-# ===============================
-# 📓 JUPYTER
-# ===============================
-.ipynb_checkpoints/
-*.ipynb
+# Model outputs / local artifacts
 
-# (Optional: keep notebooks if needed)
-# !notebooks/
-
-# ===============================
-# 🧠 MODELS & EMBEDDINGS
-# ===============================
+outputs/
 models/
-*.bin
-*.pt
-*.pth
-*.ckpt
-*.onnx
-
-# HuggingFace cache
-.cache/
-huggingface/
-transformers_cache/
-
-# ===============================
-# 🔍 VECTOR DATABASES / INDEXES
-# ===============================
-faiss_index/
-*.faiss
-*.index
-*.pkl
-
-# ===============================
-# 📊 DATA FILES
-# ===============================
-data/
-*.csv
-*.xlsx
-*.json
-*.parquet
-
-# (Optional: keep sample data)
-# !data/sample/
-
-# ===============================
-# 🖥 STREAMLIT
-# ===============================
-.streamlit/secrets.toml
-
-# ===============================
-# 🧾 LOGS
-# ===============================
-logs/
-*.log
-
-# ===============================
-# ⚙️ IDE / EDITOR
-# ===============================
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# ===============================
-# 🐳 DOCKER (optional future)
-# ===============================
-*.tar
-
-# ===============================
-# 🧪 TEST / CACHE
-# ===============================
-.pytest_cache/
-.mypy_cache/
-.coverage
-
-# ===============================
-# 🧹 MISC
-# ===============================
-.DS_Store
-Thumbs.db
+checkpoints/
+uv
+uv.lock
