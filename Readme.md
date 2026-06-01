@@ -134,23 +134,50 @@ streamlit run frontend/streamlitapp.py
 
 ## 🧠 Example Output
 
+User question:
+
+```text
+What is Retrieval-Augmented Generation?
+```
+
+Example response:
+
 ```
 Summary:
-Transformers are attention-based sequence models.
+Retrieval-Augmented Generation (RAG) combines a language model with retrieved external context from a document corpus.
 
 Method:
-Encoder-decoder with self-attention.
+The system retrieves relevant document chunks from the FAISS vector index and passes those chunks to the LLM as grounded context.
 
 Key Findings:
-- No recurrence
-- Parallel computation
-- Strong NLP performance
+- RAG combines parametric language generation with non-parametric retrieval.
+- Retrieved context helps produce more factual and specific answers.
+- The answer is generated from source chunks rather than relying only on model memory.
 
 Limitations:
-Depends on retrieval quality
+Answer quality depends on the quality of retrieved chunks, corpus coverage, and retrieval configuration.
 
 Conclusion:
-Attention replaces recurrence in sequence modeling
+RAG improves research-paper question answering by grounding LLM responses in retrieved evidence.
+```
+
+Example retrieved source metadata:
+
+```json
+{
+  "retrieved_sources": [
+    {
+      "source": "Rag.pdf",
+      "chunk_id": 2,
+      "distance": 0.76
+    },
+    {
+      "source": "Rag.pdf",
+      "chunk_id": 0,
+      "distance": 0.78
+    }
+  ]
+}
 ```
 
 ---
